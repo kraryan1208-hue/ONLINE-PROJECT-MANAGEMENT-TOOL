@@ -1,0 +1,6 @@
+{
+  "name": "Online Project Management Tool",
+  "description": "Full-featured Java Web & MVC Project Management System with Admin, Project Manager, and Team Member dashboards, JDBC database integration, dynamic task progress tracking, and Review 1 Viva evaluation tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
