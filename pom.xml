@@ -60,6 +60,7 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src-java</sourceDirectory>
         <finalName>online-project-management-tool</finalName>
         <plugins>
             <plugin>

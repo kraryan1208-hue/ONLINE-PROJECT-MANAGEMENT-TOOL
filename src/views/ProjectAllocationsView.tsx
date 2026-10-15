@@ -159,18 +159,18 @@ export const ProjectAllocationsView: React.FC<ProjectAllocationsViewProps> = ({
           </p>
         </div>
 
-        {/* View Switcher: By Project vs By Team Member */}
-        <div className="inline-flex items-center bg-slate-200/80 p-1 rounded-xl shrink-0 text-xs font-semibold">
+        {/* View Switcher: By Project vs By Team Member - Untitled UI Style */}
+        <div className="inline-flex items-center bg-slate-100 p-1 rounded-xl shrink-0 text-xs font-semibold border border-slate-200/60">
           <button
             type="button"
             onClick={() => setViewMode('by_project')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all ${
               viewMode === 'by_project'
-                ? 'bg-white text-slate-900 shadow-xs'
+                ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <FolderKanban className="w-4 h-4 text-blue-600" />
+            <FolderKanban className="w-4 h-4 text-indigo-600" />
             <span>By Project ({projects.length})</span>
           </button>
           <button
@@ -178,83 +178,125 @@ export const ProjectAllocationsView: React.FC<ProjectAllocationsViewProps> = ({
             onClick={() => setViewMode('by_member')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all ${
               viewMode === 'by_member'
-                ? 'bg-white text-slate-900 shadow-xs'
+                ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Users className="w-4 h-4 text-emerald-600" />
+            <Users className="w-4 h-4 text-indigo-600" />
             <span>By Team Member ({teamMembers.length})</span>
           </button>
         </div>
       </div>
 
-      {/* 4 Summary Stat Cards - Clickable to open full details */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* 4 Summary Stat Cards - Untitled UI Style (Preserving click-to-open details) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Projects */}
         <button
           type="button"
           onClick={() => setActiveMetricDetail('total_projects')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-blue-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Total Projects</div>
-            <FolderKanban className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100/70 flex items-center justify-center text-violet-600">
+              <FolderKanban className="w-4 h-4" />
+            </div>
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-100">
+              Active
+            </span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length}</div>
-          <div className="text-xs text-slate-500 mt-0.5">Under Active Tracking</div>
-          <div className="text-[10px] text-blue-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Projects</div>
+            <div className="text-2xl font-bold tracking-tight text-slate-900 mt-0.5 group-hover:text-violet-600 transition-colors">
+              {projects.length}
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">Under Active Tracking</div>
+          </div>
+          <div className="text-[11px] text-violet-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View all projects</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
 
+        {/* Card 2: Active Assignees */}
         <button
           type="button"
           onClick={() => setActiveMetricDetail('active_assignees')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-blue-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Active Assignees</div>
-            <Users className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100/70 flex items-center justify-center text-indigo-600">
+              <Users className="w-4 h-4" />
+            </div>
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+              Assigned
+            </span>
           </div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">{activeWorkingMembers} Members</div>
-          <div className="text-xs text-slate-500 mt-0.5">Assigned to Work Units</div>
-          <div className="text-[10px] text-blue-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Active Assignees</div>
+            <div className="text-2xl font-bold tracking-tight text-indigo-600 mt-0.5">
+              {activeWorkingMembers} Members
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">Assigned to Work Units</div>
+          </div>
+          <div className="text-[11px] text-indigo-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View team members</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
 
+        {/* Card 3: Total Work Units */}
         <button
           type="button"
           onClick={() => setActiveMetricDetail('total_tasks')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-blue-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Total Work Units</div>
-            <CheckSquare className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
+              <CheckSquare className="w-4 h-4" />
+            </div>
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+              Units
+            </span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{tasks.length} Tasks</div>
-          <div className="text-xs text-slate-500 mt-0.5">{totalAllocatedTasks} Assigned / {tasks.length - totalAllocatedTasks} Unassigned</div>
-          <div className="text-[10px] text-blue-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Work Units</div>
+            <div className="text-2xl font-bold tracking-tight text-slate-900 mt-0.5">
+              {tasks.length} Tasks
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">
+              {totalAllocatedTasks} Allocated · {tasks.length - totalAllocatedTasks} Open
+            </div>
+          </div>
+          <div className="text-[11px] text-slate-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View all work units</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
 
+        {/* Card 4: Overall Progress */}
         <button
           type="button"
           onClick={() => setActiveMetricDetail('overall_progress')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-emerald-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Overall Progress</div>
-            <TrendingUp className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/70 flex items-center justify-center text-emerald-600">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+              {overallPercent}%
+            </span>
           </div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{overallPercent}%</div>
-          <div className="text-xs text-slate-500 mt-0.5">Formula: (Completed / Total) × 100</div>
-          <div className="text-[10px] text-emerald-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Overall Progress</div>
+            <div className="text-2xl font-bold tracking-tight text-emerald-600 mt-0.5">
+              {overallPercent}%
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">(Completed / Total) × 100</div>
+          </div>
+          <div className="text-[11px] text-emerald-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View progress breakdown</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
       </div>

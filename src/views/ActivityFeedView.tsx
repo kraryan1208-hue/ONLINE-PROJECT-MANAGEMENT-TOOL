@@ -27,7 +27,7 @@ export const ActivityFeedView: React.FC<ActivityFeedViewProps> = ({ activities }
         </p>
       </div>
 
-      <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-2xs">
+      <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs">
         {activities.length === 0 ? (
           <div className="text-center py-8 text-xs text-slate-400">No activity recorded yet.</div>
         ) : (
@@ -35,8 +35,8 @@ export const ActivityFeedView: React.FC<ActivityFeedViewProps> = ({ activities }
             {activities.map((act) => (
               <div key={act.id} className="relative pl-6">
                 {/* Timeline Bullet */}
-                <span className="absolute -left-2 top-1 w-4 h-4 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                <span className="absolute -left-2 top-1 w-4 h-4 rounded-full bg-white border-2 border-indigo-600 flex items-center justify-center shadow-untitledui-xs">
+                  <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
                 </span>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">

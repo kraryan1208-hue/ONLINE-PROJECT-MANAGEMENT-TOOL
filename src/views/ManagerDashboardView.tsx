@@ -13,11 +13,16 @@ import {
   AlertCircle,
   Clock,
   ArrowUpRight,
+  Shield,
+  Activity,
 } from 'lucide-react';
 import { ProgressBar } from '../components/ProgressBar';
 import { DoughnutChart } from '../components/DoughnutChart';
+import { DashboardChartsSection, PieChartItem, BarGraphItem } from '../components/DashboardCharts';
+import { DashboardDataTable } from '../components/DashboardDataTable';
 import { MetricDetailModal, MetricDetailType } from '../components/MetricDetailModal';
 import { ProjectDetailModal } from '../components/ProjectDetailModal';
+import { TaskDetailModal } from '../components/TaskDetailModal';
 
 interface ManagerDashboardViewProps {
   currentUserId: number;
@@ -67,6 +72,7 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
   // Modal inspection state
   const [activeMetricDetail, setActiveMetricDetail] = useState<MetricDetailType | null>(null);
   const [selectedProjectDetail, setSelectedProjectDetail] = useState<Project | null>(null);
+  const [selectedTaskDetail, setSelectedTaskDetail] = useState<Task | null>(null);
 
   // Manager specific projects
   const myProjects = projects.filter((p) => p.manager_id === currentUserId || true); // View workspace projects
@@ -84,11 +90,25 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
     return matchesSearch && matchesStatus && matchesPriority && matchesProject;
   });
 
-  const doughnutData = [
+  // Chart telemetry data
+  const statusData: PieChartItem[] = [
     { name: 'Completed', value: summary.completedTasks, color: '#10B981' },
-    { name: 'In Progress', value: summary.inProgressTasks, color: '#3B82F6' },
+    { name: 'In Progress', value: summary.inProgressTasks, color: '#6366F1' },
     { name: 'Pending', value: summary.pendingTasks, color: '#F59E0B' },
   ];
+
+  const priorityData: PieChartItem[] = [
+    { name: 'High', value: tasks.filter((t) => t.priority === 'High').length, color: '#EF4444' },
+    { name: 'Medium', value: tasks.filter((t) => t.priority === 'Medium').length, color: '#F59E0B' },
+    { name: 'Low', value: tasks.filter((t) => t.priority === 'Low').length, color: '#64748B' },
+  ];
+
+  const barData: BarGraphItem[] = myProjects.map((p) => ({
+    label: p.title.length > 14 ? p.title.substring(0, 12) + '...' : p.title,
+    completed: p.completed_tasks,
+    pendingOrTotal: p.total_tasks,
+    rate: p.progress_percentage,
+  }));
 
   return (
     <div className="space-y-6">
@@ -113,14 +133,14 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => onCreateTask()}
-                className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs"
+                className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-untitledui-xs transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-slate-500" />
                 <span>Create Task</span>
               </button>
               <button
                 onClick={onCreateProject}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-untitledui-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Project</span>
@@ -128,179 +148,217 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 7 Specific Cards required for Project Manager */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          {/* 7 Specific Cards required for Project Manager - Ultra-Professional Untitled UI Style */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            {/* Card 1: Total Projects */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('total_projects')}
-              className="text-left p-4 bg-white hover:bg-purple-50/40 hover:border-purple-300 transition-all rounded-xl border border-slate-200 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-purple-500/20"
-              title="Click to view Total Projects details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Total Projects breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-purple-600 transition-colors flex items-center justify-between">
-                <span>Total Projects</span>
-                <span className="text-[10px] text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100/70 flex items-center justify-center text-violet-600">
+                  <FolderKanban className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-100">
+                  Scope
+                </span>
               </div>
-              <div className="text-2xl font-bold text-slate-900 group-hover:text-purple-700">{summary.totalProjects}</div>
-              <div className="text-[10px] text-slate-400 mt-1">Under Supervision</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Projects</div>
+                <div className="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-violet-600 transition-colors mt-0.5">
+                  {summary.totalProjects}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>Under supervision</span>
+                <span className="text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 2: Active Projects */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('active_projects')}
-              className="text-left p-4 bg-white hover:bg-blue-50/40 hover:border-blue-300 transition-all rounded-xl border border-slate-200 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
-              title="Click to view Active Projects details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Active Projects breakdown"
             >
-              <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider mb-1 group-hover:text-blue-800 transition-colors flex items-center justify-between">
-                <span>Active Projects</span>
-                <span className="text-[10px] text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100/70 flex items-center justify-center text-sky-600">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-100">
+                  Live
+                </span>
               </div>
-              <div className="text-2xl font-bold text-blue-600 group-hover:text-blue-700">{summary.activeProjects}</div>
-              <div className="text-[10px] text-blue-600 mt-1 font-medium">In Progress</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Active Projects</div>
+                <div className="text-2xl font-bold tracking-tight text-sky-600 group-hover:text-sky-700 transition-colors mt-0.5">
+                  {summary.activeProjects}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>In progress</span>
+                <span className="text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 3: Completed Projects */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('total_projects')}
-              className="text-left p-4 bg-white hover:bg-emerald-50/40 hover:border-emerald-300 transition-all rounded-xl border border-slate-200 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-              title="Click to view Completed Projects details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Completed Projects breakdown"
             >
-              <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1 group-hover:text-emerald-800 transition-colors flex items-center justify-between">
-                <span>Completed</span>
-                <span className="text-[10px] text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/70 flex items-center justify-center text-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  Closed
+                </span>
               </div>
-              <div className="text-2xl font-bold text-emerald-600 group-hover:text-emerald-700">{summary.completedProjects}</div>
-              <div className="text-[10px] text-emerald-600 mt-1 font-medium">Finished</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Completed</div>
+                <div className="text-2xl font-bold tracking-tight text-emerald-600 group-hover:text-emerald-700 transition-colors mt-0.5">
+                  {summary.completedProjects}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-emerald-600 font-medium">Delivered</span>
+                <span className="text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 4: Total Tasks */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('total_tasks')}
-              className="text-left p-4 bg-white hover:bg-slate-100 hover:border-slate-300 transition-all rounded-xl border border-slate-200 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-slate-500/20"
-              title="Click to view Total Tasks details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Total Tasks breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-slate-700 transition-colors flex items-center justify-between">
-                <span>Total Tasks</span>
-                <span className="text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
+                  <CheckSquare className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  Tasks
+                </span>
               </div>
-              <div className="text-2xl font-bold text-slate-900 group-hover:text-slate-800">{summary.totalTasks}</div>
-              <div className="text-[10px] text-slate-400 mt-1">Assigned</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Tasks</div>
+                <div className="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-slate-800 transition-colors mt-0.5">
+                  {summary.totalTasks}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>Assigned workload</span>
+                <span className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 5: Completed Tasks */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('completed_tasks')}
-              className="text-left p-4 bg-white hover:bg-emerald-50/40 hover:border-emerald-300 transition-all rounded-xl border border-slate-200 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-              title="Click to view Completed Tasks details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Completed Tasks breakdown"
             >
-              <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1 group-hover:text-emerald-800 transition-colors flex items-center justify-between">
-                <span>Completed Tasks</span>
-                <span className="text-[10px] text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/70 flex items-center justify-center text-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  {summary.overallProgressPercentage}%
+                </span>
               </div>
-              <div className="text-2xl font-bold text-emerald-600 group-hover:text-emerald-700">{summary.completedTasks}</div>
-              <div className="text-[10px] text-emerald-600 mt-1 font-medium">100% Verified</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Completed Tasks</div>
+                <div className="text-2xl font-bold tracking-tight text-emerald-600 group-hover:text-emerald-700 transition-colors mt-0.5">
+                  {summary.completedTasks}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-emerald-600 font-medium">100% verified</span>
+                <span className="text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 6: Pending Tasks */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('pending_tasks')}
-              className="text-left p-4 bg-white hover:bg-amber-50/40 hover:border-amber-300 transition-all rounded-xl border border-slate-200 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
-              title="Click to view Pending Tasks details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Pending Tasks breakdown"
             >
-              <div className="text-[11px] font-semibold text-amber-700 uppercase tracking-wider mb-1 group-hover:text-amber-800 transition-colors flex items-center justify-between">
-                <span>Pending Tasks</span>
-                <span className="text-[10px] text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100/70 flex items-center justify-center text-amber-600">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                  To Do
+                </span>
               </div>
-              <div className="text-2xl font-bold text-amber-600 group-hover:text-amber-700">{summary.pendingTasks}</div>
-              <div className="text-[10px] text-amber-600 mt-1 font-medium">In Queue</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-amber-700 uppercase tracking-wider">Pending Tasks</div>
+                <div className="text-2xl font-bold tracking-tight text-amber-600 group-hover:text-amber-700 transition-colors mt-0.5">
+                  {summary.pendingTasks}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-amber-600 font-medium">In progress queue</span>
+                <span className="text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 7: Team Members */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('team_members')}
-              className="text-left p-4 bg-white hover:bg-indigo-50/40 hover:border-indigo-300 transition-all rounded-xl border border-slate-200 shadow-2xs col-span-2 lg:col-span-1 group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-              title="Click to view Team Members details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm col-span-2 sm:col-span-2 md:col-span-1 lg:col-span-1 group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Team Members breakdown"
             >
-              <div className="text-[11px] font-semibold text-indigo-700 uppercase tracking-wider mb-1 group-hover:text-indigo-800 transition-colors flex items-center justify-between">
-                <span>Team Members</span>
-                <span className="text-[10px] text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100/70 flex items-center justify-center text-indigo-600">
+                  <Users className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  Engineers
+                </span>
               </div>
-              <div className="text-2xl font-bold text-indigo-600 group-hover:text-indigo-700">{teamMembers.length}</div>
-              <div className="text-[10px] text-indigo-600 mt-1 font-medium">Active Engineers</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Team Members</div>
+                <div className="text-2xl font-bold tracking-tight text-indigo-600 group-hover:text-indigo-700 transition-colors mt-0.5">
+                  {teamMembers.length}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>Active direct reports</span>
+                <span className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
           </div>
 
-          {/* Chart & Projects Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 mb-1">Task Breakdown Chart</h3>
-                <p className="text-xs text-slate-500 mb-4">Real-time status proportions</p>
-              </div>
-              <DoughnutChart data={doughnutData} />
-              <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs">
-                <span className="text-slate-500">Overall Progress</span>
-                <span className="font-bold text-slate-900">{summary.overallProgressPercentage}%</span>
-              </div>
-            </div>
+          {/* CHARTS SECTION: PI CHARTS & VELOCITY GRAPH (Side-by-Side with Interactive Toggles) */}
+          <DashboardChartsSection
+            statusData={statusData}
+            priorityData={priorityData}
+            barData={barData}
+            completionRate={summary.overallProgressPercentage}
+            totalTasks={summary.totalTasks}
+            completedTasks={summary.completedTasks}
+          />
 
-            <div className="lg:col-span-2 p-6 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Project Progress Telemetry</h3>
-                  <p className="text-xs text-slate-500">Formula: (Completed Tasks / Total Tasks) × 100</p>
-                </div>
-                <button
-                  onClick={onCreateProject}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                >
-                  + Add Project
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {myProjects.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => setSelectedProjectDetail(p)}
-                    className="p-4 rounded-xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200/80 hover:border-blue-300 transition-all cursor-pointer group shadow-2xs"
-                    title={`Click to view full details of ${p.title}`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                            {p.title}
-                          </h4>
-                          <span className="text-[11px] font-semibold text-blue-600 font-mono">
-                            {p.status}
-                          </span>
-                          <span className="text-[10px] text-blue-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            View Details ↗
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">{p.description}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-sm font-bold text-slate-900 group-hover:text-blue-700">
-                          {p.progress_percentage}%
-                        </span>
-                        <div className="text-[10px] text-slate-400">
-                          {p.completed_tasks}/{p.total_tasks} completed
-                        </div>
-                      </div>
-                    </div>
-                    <ProgressBar
-                      percentage={p.progress_percentage}
-                      completedTasks={p.completed_tasks}
-                      totalTasks={p.total_tasks}
-                      showLabel={false}
-                      size="sm"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* TABLES SECTION: LIVE WORKSPACE DELIVERABLES & TRACKING TABLE */}
+          <DashboardDataTable
+            tasks={tasks}
+            projects={projects}
+            users={teamMembers}
+            onSelectTask={(task) => setSelectedTaskDetail(task)}
+            onSelectProject={(project) => setSelectedProjectDetail(project)}
+            onUpdateTaskStatus={onUpdateTaskStatus}
+          />
         </div>
       )}
 
@@ -325,23 +383,33 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {myProjects.map((p) => (
-              <div key={p.id} className="p-5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-4">
+              <div
+                key={p.id}
+                onClick={() => setSelectedProjectDetail(p)}
+                className="p-5 bg-white hover:bg-blue-50/30 rounded-xl border border-slate-200 hover:border-blue-300 shadow-2xs space-y-4 cursor-pointer transition-all group"
+                title={`Click to view team members, roles, and details of ${p.title}`}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="text-[11px] font-mono text-slate-400">PROJECT #{p.id}</span>
-                    <h3 className="text-sm font-bold text-slate-900 mt-0.5">{p.title}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors mt-0.5">{p.title}</h3>
+                      <span className="text-[10px] text-blue-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                        View Team &amp; Details ↗
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => onEditProject(p)}
-                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md transition-colors"
+                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md transition-colors cursor-pointer"
                       title="Edit Project"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => onDeleteProject(p)}
-                      className="p-1.5 text-slate-500 hover:text-rose-600 rounded-md transition-colors"
+                      className="p-1.5 text-slate-500 hover:text-rose-600 rounded-md transition-colors cursor-pointer"
                       title="Delete Project"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -371,8 +439,11 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
                 <div className="pt-2 flex justify-between items-center text-xs">
                   <span className="text-slate-400">Total Work Units: {p.total_tasks}</span>
                   <button
-                    onClick={() => onCreateTask(p.id)}
-                    className="font-semibold text-blue-600 hover:text-blue-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCreateTask(p.id);
+                    }}
+                    className="font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
                   >
                     + Assign New Task
                   </button>
@@ -617,6 +688,22 @@ export const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({
         users={teamMembers}
         onClose={() => setSelectedProjectDetail(null)}
         onEdit={(p) => onEditProject(p)}
+      />
+
+      {/* Task Detail Modal for Live Deliverables Table */}
+      <TaskDetailModal
+        isOpen={selectedTaskDetail !== null}
+        task={selectedTaskDetail}
+        onClose={() => setSelectedTaskDetail(null)}
+        project={projects.find((p) => p.id === selectedTaskDetail?.project_id)}
+        assignee={teamMembers.find((u) => u.id === selectedTaskDetail?.assigned_to)}
+        onEditTask={(t) => onEditTask(t)}
+        onDeleteTask={(id) => {
+          const t = tasks.find((tk) => tk.id === id);
+          if (t) onDeleteTask(t);
+        }}
+        onUpdateStatus={(id, st) => onUpdateTaskStatus(id, st)}
+        canEdit={true}
       />
     </div>
   );

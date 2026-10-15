@@ -28,6 +28,16 @@ public class ProjectProgress implements Serializable {
         this.completionPercentage = calculateProgress();
     }
 
+    public ProjectProgress(int projectId, String projectTitle, int totalTasks, int completedTasks, int inProgressTasks, int pendingTasks, double completionPercentage) {
+        this.projectId = projectId;
+        this.projectTitle = projectTitle;
+        this.totalTasks = totalTasks;
+        this.completedTasks = completedTasks;
+        this.inProgressTasks = inProgressTasks;
+        this.pendingTasks = pendingTasks;
+        this.completionPercentage = completionPercentage;
+    }
+
     /**
      * Core dynamic formula: Completed Tasks / Total Tasks * 100
      */

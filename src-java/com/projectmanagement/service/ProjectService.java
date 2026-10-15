@@ -37,10 +37,17 @@ public class ProjectService {
     }
 
     /**
-     * Dynamically calculates project completion metrics.
+     * Dynamically queries project completion metrics directly from MySQL view v_project_progress.
      * Guaranteed NO fake or static values.
      */
     public ProjectProgress calculateProjectProgress(int projectId) throws DatabaseException {
+        // Query database view v_project_progress
+        ProjectProgress progress = projectDAO.getProjectProgressFromView(projectId);
+        if (progress != null) {
+            return progress;
+        }
+
+        // Fallback to calculation if view returns empty
         Project project = projectDAO.getProjectById(projectId);
         if (project == null) {
             return null;
@@ -66,9 +73,18 @@ public class ProjectService {
     }
 
     /**
-     * Aggregates all project reports with percentage progress calculations.
+     * Aggregates all project reports directly from MySQL database view v_project_progress.
      */
     public List<ProjectProgress> getAllProjectProgressReports() throws DatabaseException {
+        try {
+            List<ProjectProgress> viewList = projectDAO.getAllProjectProgressFromView();
+            if (viewList != null && !viewList.isEmpty()) {
+                return viewList;
+            }
+        } catch (DatabaseException ignored) {
+            // fallback
+        }
+
         List<Project> projects = projectDAO.getAllProjects();
         List<ProjectProgress> reports = new ArrayList<>();
 
@@ -79,7 +95,8 @@ public class ProjectService {
                 p.getTotalTasks(),
                 p.getCompletedTasks(),
                 p.getInProgressTasks(),
-                p.getPendingTasks()
+                p.getPendingTasks(),
+                p.getCompletionPercentage()
             ));
         }
 

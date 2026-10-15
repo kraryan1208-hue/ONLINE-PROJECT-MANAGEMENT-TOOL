@@ -120,24 +120,26 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Read saved theme or default to a fresh modern theme
+  // Always default to clean white Untitled UI light mode
   const [mode, setModeState] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('opmt_theme_mode');
-    if (saved === 'dark' || saved === 'light') return saved;
-    // If user clicked thame change karo, let's provide a refreshed experience
-    const oldTheme = localStorage.getItem('app_theme');
-    if (oldTheme === 'dark') return 'dark';
-    return 'dark'; // New changed theme default: Obsidian Dark!
+    if (saved === 'light') return 'light';
+    // Clean up any old dark settings
+    localStorage.removeItem('app_theme');
+    localStorage.setItem('opmt_theme_mode', 'light');
+    return 'light';
   });
 
   const [accent, setAccentState] = useState<ThemeAccent>(() => {
     const saved = localStorage.getItem('opmt_theme_accent') as ThemeAccent;
-    if (saved) return saved;
-    return 'cyber'; // Default to sleek cyber / cyan
+    if (saved && saved !== 'cyber') return saved;
+    return 'indigo';
   });
 
   const [activePresetId, setActivePresetId] = useState<string>(() => {
-    return localStorage.getItem('opmt_theme_preset') || 'obsidian_dark';
+    const saved = localStorage.getItem('opmt_theme_preset');
+    if (saved && saved !== 'obsidian_dark') return saved;
+    return 'modern_indigo';
   });
 
   // Apply theme to document element
@@ -148,6 +150,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('opmt_theme_accent', accent);
     localStorage.setItem('opmt_theme_preset', activePresetId);
 
+    // Ensure root does NOT have dark class
     if (mode === 'dark') {
       root.classList.add('dark');
     } else {

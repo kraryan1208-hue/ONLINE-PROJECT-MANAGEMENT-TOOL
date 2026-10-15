@@ -235,7 +235,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition-colors"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-untitledui-xs transition-colors"
           >
             Close Details
           </button>

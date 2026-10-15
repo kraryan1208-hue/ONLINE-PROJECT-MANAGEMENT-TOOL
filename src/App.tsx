@@ -245,19 +245,20 @@ export default function App() {
     setActiveTab('dashboard');
   };
 
-  // FAST ROLE SWITCHER (For rapid professor / viva evaluation)
-  const handleQuickSwitchRole = async (targetRole: UserRole) => {
-    let email = 'admin@example.com';
-    let pass = 'admin123';
-    if (targetRole === 'PROJECT_MANAGER') {
-      email = 'manager@example.com';
-      pass = 'manager123';
-    } else if (targetRole === 'TEAM_MEMBER') {
-      email = 'member@example.com';
-      pass = 'member123';
+  // Enforce Role-Based Tab Guarding:
+  // Each role only has access to their authorized tabs, else default to their specific dashboard
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentUser.role === 'TEAM_MEMBER') {
+      if (['users', 'team', 'reports'].includes(activeTab)) {
+        setActiveTab('dashboard');
+      }
+    } else if (currentUser.role === 'PROJECT_MANAGER') {
+      if (['users'].includes(activeTab)) {
+        setActiveTab('dashboard');
+      }
     }
-    await handleLogin(email, pass);
-  };
+  }, [currentUser, activeTab]);
 
   // USER CRUD
   const handleSaveUser = async (userData: { name: string; email: string; password?: string; role: UserRole }) => {
@@ -419,13 +420,12 @@ export default function App() {
   const teamMembers = users.filter((u) => u.role === 'TEAM_MEMBER');
 
   return (
-    <div className="min-h-screen bg-slate-100/70 dark:bg-slate-950 flex flex-col font-sans text-slate-800 dark:text-slate-100 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-150">
+    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-800 antialiased selection:bg-indigo-600 selection:text-white transition-colors duration-150">
       {/* Top Navigation Bar */}
       <Navbar
         currentUser={currentUser}
         tasksCount={tasks.length}
         onLogout={handleLogout}
-        onQuickSwitchRole={handleQuickSwitchRole}
         onOpenActivities={() => setActiveTab('activity')}
         onNavigateToTasks={(subTab) => {
           setTaskManagementSubTab(subTab || 'overview');
@@ -546,6 +546,7 @@ export default function App() {
                   setProjectModalOpen(true);
                 }}
                 onDeleteProject={handleDeleteProject}
+                onUpdateTaskStatus={handleUpdateTaskStatus}
                 onSaveSettings={handleSaveSettings}
                 onNavigateSection={(sec) => setActiveTab(sec as any)}
                 successMessage={successToast}
@@ -593,6 +594,7 @@ export default function App() {
                 currentUser={currentUser}
                 tasks={tasks}
                 projects={projects}
+                users={users}
                 onUpdateStatus={handleUpdateTaskStatus}
                 successMessage={successToast}
                 activeSection={activeTab as any}
@@ -660,7 +662,8 @@ export default function App() {
         isOpen={selectedProjectDetail !== null}
         project={selectedProjectDetail}
         onClose={() => setSelectedProjectDetail(null)}
-        tasks={tasks.filter((t) => t.project_id === selectedProjectDetail?.id)}
+        tasks={tasks}
+        users={users}
         onSelectTask={(t) => setSelectedTaskDetail(t)}
       />
     </div>

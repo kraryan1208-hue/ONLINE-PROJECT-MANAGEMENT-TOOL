@@ -105,7 +105,7 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
           <button
             type="button"
             onClick={() => onCreateTask()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors shrink-0"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-untitledui-xs transition-colors shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>+ Create / Add Task</span>
@@ -113,18 +113,18 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
         )}
       </div>
 
-      {/* Task Management Sub-Tabs Navigation */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
+      {/* Task Management Sub-Tabs Navigation - Untitled UI Segmented Control */}
+      <div className="bg-slate-100/90 p-1 rounded-xl inline-flex flex-wrap items-center gap-1 border border-slate-200/80">
         <button
           type="button"
           onClick={() => setActiveSubTab('overview')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeSubTab === 'overview'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/50'
           }`}
         >
-          <BarChart3 className="w-4 h-4" />
+          <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
           <span>Overview</span>
         </button>
 
@@ -134,52 +134,52 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
             setActiveSubTab('create');
             if (canManage) onCreateTask();
           }}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeSubTab === 'create'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/50'
           }`}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5 text-indigo-600" />
           <span>Create &amp; Add Task</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('manage')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeSubTab === 'manage'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/50'
           }`}
         >
-          <Filter className="w-4 h-4" />
+          <Filter className="w-3.5 h-3.5 text-indigo-600" />
           <span>Manage Tasks ({filteredTasks.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('edit')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeSubTab === 'edit'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/50'
           }`}
         >
-          <Edit2 className="w-4 h-4" />
+          <Edit2 className="w-3.5 h-3.5 text-indigo-600" />
           <span>Edit Task</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('total')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeSubTab === 'total'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-white text-slate-900 shadow-untitledui-xs font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/50'
           }`}
         >
-          <Layers className="w-4 h-4" />
+          <Layers className="w-3.5 h-3.5 text-indigo-600" />
           <span>Total Tasks ({totalTasksCount})</span>
         </button>
       </div>
@@ -187,7 +187,7 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
       {/* 1. SUB-TAB: OVERVIEW */}
       {activeSubTab === 'overview' && (
         <div className="space-y-6">
-          {/* 5 KPI Metric Cards */}
+          {/* 5 KPI Metric Cards - Untitled UI Style */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             <button
               type="button"
@@ -195,13 +195,13 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
                 setStatusFilter('ALL');
                 setActiveSubTab('total');
               }}
-              className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-blue-400 text-left transition-colors cursor-pointer group"
+              className="p-4 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs hover:border-slate-300 hover:shadow-untitledui-sm text-left transition-all cursor-pointer group"
             >
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600">
+              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600">
                 Total Tasks
               </div>
-              <div className="text-2xl font-black text-slate-900 mt-1">{totalTasksCount}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Click to view all</div>
+              <div className="text-2xl font-bold tracking-tight text-slate-900 mt-1 group-hover:text-indigo-600">{totalTasksCount}</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Click to view all</div>
             </button>
 
             <button
@@ -210,11 +210,11 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
                 setStatusFilter('Completed');
                 setActiveSubTab('manage');
               }}
-              className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-emerald-400 text-left transition-colors cursor-pointer group"
+              className="p-4 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs hover:border-slate-300 hover:shadow-untitledui-sm text-left transition-all cursor-pointer group"
             >
-              <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Completed</div>
-              <div className="text-2xl font-black text-emerald-700 mt-1">{completedCount}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">{completionPercentage}% of work units</div>
+              <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Completed</div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 mt-1">{completedCount}</div>
+              <div className="text-[11px] text-emerald-600 mt-0.5 font-medium">{completionPercentage}% of work units</div>
             </button>
 
             <button
@@ -223,11 +223,11 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
                 setStatusFilter('In Progress');
                 setActiveSubTab('manage');
               }}
-              className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-blue-400 text-left transition-colors cursor-pointer group"
+              className="p-4 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs hover:border-slate-300 hover:shadow-untitledui-sm text-left transition-all cursor-pointer group"
             >
-              <div className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">In Progress</div>
-              <div className="text-2xl font-black text-blue-700 mt-1">{inProgressCount}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Under execution</div>
+              <div className="text-[11px] font-semibold text-indigo-700 uppercase tracking-wider">In Progress</div>
+              <div className="text-2xl font-bold tracking-tight text-indigo-600 mt-1">{inProgressCount}</div>
+              <div className="text-[11px] text-indigo-600 mt-0.5 font-medium">Under execution</div>
             </button>
 
             <button
@@ -236,11 +236,11 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
                 setStatusFilter('Pending');
                 setActiveSubTab('manage');
               }}
-              className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-amber-400 text-left transition-colors cursor-pointer group"
+              className="p-4 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs hover:border-slate-300 hover:shadow-untitledui-sm text-left transition-all cursor-pointer group"
             >
-              <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Pending</div>
-              <div className="text-2xl font-black text-amber-700 mt-1">{pendingCount}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Awaiting start</div>
+              <div className="text-[11px] font-semibold text-amber-700 uppercase tracking-wider">Pending</div>
+              <div className="text-2xl font-bold tracking-tight text-amber-600 mt-1">{pendingCount}</div>
+              <div className="text-[11px] text-amber-600 mt-0.5 font-medium">Awaiting action</div>
             </button>
 
             <button
@@ -249,11 +249,11 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
                 setPriorityFilter('High');
                 setActiveSubTab('manage');
               }}
-              className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-rose-400 text-left transition-colors cursor-pointer group"
+              className="p-4 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs hover:border-slate-300 hover:shadow-untitledui-sm text-left transition-all cursor-pointer group col-span-2 sm:col-span-1"
             >
-              <div className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">High Priority</div>
-              <div className="text-2xl font-black text-rose-700 mt-1">{highPriorityCount}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Requires attention</div>
+              <div className="text-[11px] font-semibold text-rose-700 uppercase tracking-wider">High Priority</div>
+              <div className="text-2xl font-bold tracking-tight text-rose-600 mt-1">{highPriorityCount}</div>
+              <div className="text-[11px] text-rose-600 mt-0.5 font-medium">Urgent delivery</div>
             </button>
           </div>
 
@@ -345,14 +345,20 @@ export const TaskManagementView: React.FC<TaskManagementViewProps> = ({
               Add a new work unit, link to project, assign team member, and define priority and deadline.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => onCreateTask()}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Open Task Creation Form</span>
-          </button>
+          {canManage ? (
+            <button
+              type="button"
+              onClick={() => onCreateTask()}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors inline-flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Open Task Creation Form</span>
+            </button>
+          ) : (
+            <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs font-medium">
+              Task creation is restricted to Administrators and Project Managers. Team members can view tasks and update their assigned task statuses.
+            </div>
+          )}
         </div>
       )}
 

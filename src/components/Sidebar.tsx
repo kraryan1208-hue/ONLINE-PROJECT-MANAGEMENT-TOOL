@@ -8,6 +8,8 @@ import {
   BarChart3,
   Settings,
   User,
+  Shield,
+  Briefcase,
   Activity as ActivityIcon,
   LogOut,
 } from 'lucide-react';
@@ -86,10 +88,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = getNavItems();
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
-      <div className="p-4 space-y-6">
+    <aside className="w-64 bg-white border-r border-slate-200/90 text-slate-600 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
+      <div className="p-4 space-y-5">
+        {/* Active Role Workspace Card - Untitled UI Style */}
+        <div className="px-3.5 py-3 rounded-xl bg-slate-50/80 border border-slate-200/80 shadow-untitledui-xs">
+          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Active Workspace
+          </div>
+          <div className="flex items-center gap-2 mt-1.5">
+            {role === 'ADMIN' && <Shield className="w-4 h-4 text-rose-500 shrink-0" />}
+            {role === 'PROJECT_MANAGER' && <Briefcase className="w-4 h-4 text-indigo-500 shrink-0" />}
+            {role === 'TEAM_MEMBER' && <User className="w-4 h-4 text-emerald-500 shrink-0" />}
+            <span className="text-xs font-semibold text-slate-900 tracking-tight">
+              {role === 'ADMIN'
+                ? 'Administrator Dashboard'
+                : role === 'PROJECT_MANAGER'
+                ? 'Project Manager Dashboard'
+                : 'Team Member Dashboard'}
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            <span>Role-authorized session</span>
+          </div>
+        </div>
+
         <div>
-          <div className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+          <div className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
             Navigation
           </div>
           <nav className="space-y-1">
@@ -99,13 +124,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                  className={`w-full group flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg transition-all ${
                     isActive
-                      ? 'bg-[var(--theme-primary)] text-white shadow-xs'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      ? 'bg-indigo-50/90 text-indigo-700 font-semibold border border-indigo-200/70 shadow-untitledui-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  {item.icon}
+                  <span
+                    className={`shrink-0 transition-colors ${
+                      isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
                 </button>
               );
@@ -114,13 +145,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Bottom Session Logout */}
-      <div className="p-4 border-t border-slate-800">
+      {/* Bottom Session Logout - Untitled UI Style */}
+      <div className="p-4 border-t border-slate-200/90 bg-slate-50/40">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50/80 rounded-lg transition-colors border border-transparent hover:border-rose-200/60"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4 text-slate-400 group-hover:text-rose-500" />
           <span>Sign Out / Invalidate Session</span>
         </button>
       </div>

@@ -160,7 +160,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, onUpdateP
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs disabled:opacity-50"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-untitledui-xs transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             <span>{loading ? 'Saving Changes...' : 'Save Profile Changes'}</span>

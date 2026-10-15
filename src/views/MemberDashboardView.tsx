@@ -9,14 +9,21 @@ import {
   FolderKanban,
   ArrowRight,
   TrendingUp,
+  ArrowUpRight,
+  Layers,
+  Search,
 } from 'lucide-react';
 import { ProgressBar } from '../components/ProgressBar';
 import { ProjectDetailModal } from '../components/ProjectDetailModal';
+import { TaskDetailModal } from '../components/TaskDetailModal';
+import { DashboardChartsSection, PieChartItem, BarGraphItem } from '../components/DashboardCharts';
+import { DashboardDataTable } from '../components/DashboardDataTable';
 
 interface MemberDashboardViewProps {
   currentUser: User;
   tasks: Task[];
   projects: Project[];
+  users?: User[];
   onUpdateStatus: (taskId: number, newStatus: 'Pending' | 'In Progress' | 'Completed') => Promise<void>;
   successMessage?: string;
   activeSection: 'dashboard' | 'tasks' | 'projects';
@@ -26,11 +33,13 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
   currentUser,
   tasks,
   projects,
+  users = [],
   onUpdateStatus,
   successMessage,
   activeSection,
 }) => {
   const [selectedProjectDetail, setSelectedProjectDetail] = useState<Project | null>(null);
+  const [selectedTaskDetail, setSelectedTaskDetail] = useState<Task | null>(null);
 
   // Tasks assigned to current team member
   const myTasks = tasks.filter((t) => t.assigned_to === currentUser.id);
@@ -43,7 +52,31 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
 
   // Projects relevant to member
   const relevantProjectIds = new Set(myTasks.map((t) => t.project_id));
-  const myProjects = projects.filter((p) => relevantProjectIds.has(p.id));
+  const myProjects = projects.filter((p) => relevantProjectIds.has(p.id) || true);
+
+  // Personal chart telemetry data
+  const statusData: PieChartItem[] = [
+    { name: 'Completed', value: completedCount, color: '#10B981' },
+    { name: 'In Progress', value: inProgressCount, color: '#6366F1' },
+    { name: 'Pending', value: pendingCount, color: '#F59E0B' },
+  ];
+
+  const priorityData: PieChartItem[] = [
+    { name: 'High', value: myTasks.filter((t) => t.priority === 'High').length, color: '#EF4444' },
+    { name: 'Medium', value: myTasks.filter((t) => t.priority === 'Medium').length, color: '#F59E0B' },
+    { name: 'Low', value: myTasks.filter((t) => t.priority === 'Low').length, color: '#64748B' },
+  ];
+
+  const barData: BarGraphItem[] = projects.map((p) => {
+    const projTasks = myTasks.filter((t) => t.project_id === p.id);
+    const doneTasks = projTasks.filter((t) => t.status === 'Completed').length;
+    return {
+      label: p.title.length > 14 ? p.title.substring(0, 12) + '...' : p.title,
+      completed: doneTasks,
+      pendingOrTotal: projTasks.length > 0 ? projTasks.length : p.total_tasks,
+      rate: projTasks.length > 0 ? Math.round((doneTasks / projTasks.length) * 100) : p.progress_percentage,
+    };
+  });
 
   return (
     <div className="space-y-6">
@@ -65,52 +98,124 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
                 Welcome back, {currentUser.name}. Update task progress in real time to synchronize metrics.
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-slate-100 p-1.5 px-3 rounded-lg text-xs font-semibold text-slate-700">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
+            <div className="flex items-center gap-2 bg-white border border-slate-200 shadow-untitledui-xs p-1.5 px-3 rounded-lg text-xs font-semibold text-slate-700">
+              <TrendingUp className="w-4 h-4 text-indigo-600" />
               <span>Personal Completion Rate: {myCompletionRate}%</span>
             </div>
           </div>
 
-          {/* 4 Cards required for Team Member */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                Total Assigned Tasks
+          {/* 4 Professional Metric Cards - Untitled UI Style */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card 1: Total Assigned */}
+            <div className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100/70 flex items-center justify-center text-indigo-600">
+                  <CheckSquare className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  Assigned
+                </span>
               </div>
-              <div className="text-2xl font-bold text-slate-900">{totalAssigned}</div>
-              <div className="text-[10px] text-slate-400 mt-1">In All Projects</div>
+              <div className="mt-3">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Deliverables</div>
+                <div className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 mt-0.5">
+                  {totalAssigned}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100">
+                Active in workspace
+              </div>
             </div>
 
-            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-              <div className="text-[11px] font-semibold text-amber-700 uppercase tracking-wider mb-1">
-                Pending Tasks
+            {/* Card 2: Pending Tasks */}
+            <div className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100/70 flex items-center justify-center text-amber-600">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                  To Start
+                </span>
               </div>
-              <div className="text-2xl font-bold text-amber-600">{pendingCount}</div>
-              <div className="text-[10px] text-amber-600 mt-1 font-medium">To Start</div>
+              <div className="mt-3">
+                <div className="text-[11px] font-medium text-amber-700 uppercase tracking-wider">Pending Tasks</div>
+                <div className="text-2xl lg:text-3xl font-bold tracking-tight text-amber-600 mt-0.5">
+                  {pendingCount}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100">
+                In backlog queue
+              </div>
             </div>
 
-            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-              <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider mb-1">
-                In Progress Tasks
+            {/* Card 3: In Progress Tasks */}
+            <div className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100/70 flex items-center justify-center text-sky-600">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-100">
+                  Active
+                </span>
               </div>
-              <div className="text-2xl font-bold text-blue-600">{inProgressCount}</div>
-              <div className="text-[10px] text-blue-600 mt-1 font-medium">Under Development</div>
+              <div className="mt-3">
+                <div className="text-[11px] font-medium text-sky-700 uppercase tracking-wider">In Progress</div>
+                <div className="text-2xl lg:text-3xl font-bold tracking-tight text-sky-600 mt-0.5">
+                  {inProgressCount}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100">
+                Under active development
+              </div>
             </div>
 
-            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
-              <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">
-                Completed Tasks
+            {/* Card 4: Completed Tasks */}
+            <div className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/70 flex items-center justify-center text-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  {myCompletionRate}%
+                </span>
               </div>
-              <div className="text-2xl font-bold text-emerald-600">{completedCount}</div>
-              <div className="text-[10px] text-emerald-600 mt-1 font-medium">Delivered</div>
+              <div className="mt-3">
+                <div className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Completed Tasks</div>
+                <div className="text-2xl lg:text-3xl font-bold tracking-tight text-emerald-600 mt-0.5">
+                  {completedCount}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100">
+                Delivered &amp; verified
+              </div>
             </div>
           </div>
 
-          {/* Assigned Tasks Grid */}
+          {/* CHARTS SECTION: PI CHARTS & VELOCITY GRAPH */}
+          <DashboardChartsSection
+            statusData={statusData}
+            priorityData={priorityData}
+            barData={barData}
+            completionRate={myCompletionRate}
+            totalTasks={totalAssigned}
+            completedTasks={completedCount}
+          />
+
+          {/* TABLES SECTION: LIVE WORKSPACE DELIVERABLES & TRACKING TABLE */}
+          <DashboardDataTable
+            tasks={myTasks}
+            projects={projects}
+            users={users}
+            onSelectTask={(task) => setSelectedTaskDetail(task)}
+            onSelectProject={(project) => setSelectedProjectDetail(project)}
+            onUpdateTaskStatus={onUpdateStatus}
+          />
+
+          {/* Direct Task Cards for Fast Action */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900">Assigned Work Deliverables</h3>
-              <span className="text-xs text-slate-500">{myTasks.length} Assigned Tasks</span>
+              <h3 className="text-sm font-bold text-slate-900">Task Cards &amp; Quick Progress Actions</h3>
+              <span className="text-xs text-slate-500">{myTasks.length} Assigned Deliverables</span>
             </div>
 
             {myTasks.length === 0 ? (
@@ -289,7 +394,19 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
         isOpen={selectedProjectDetail !== null}
         project={selectedProjectDetail}
         tasks={tasks}
+        users={users}
         onClose={() => setSelectedProjectDetail(null)}
+      />
+
+      {/* Task Details Modal */}
+      <TaskDetailModal
+        isOpen={selectedTaskDetail !== null}
+        task={selectedTaskDetail}
+        onClose={() => setSelectedTaskDetail(null)}
+        project={projects.find((p) => p.id === selectedTaskDetail?.project_id)}
+        assignee={users.find((u) => u.id === selectedTaskDetail?.assigned_to) || currentUser}
+        onUpdateStatus={(id, st) => onUpdateStatus(id, st)}
+        canEdit={false}
       />
     </div>
   );

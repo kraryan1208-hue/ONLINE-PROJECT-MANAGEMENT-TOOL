@@ -44,27 +44,34 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </p>
       </div>
 
-      {/* Top Metrics Cards - Clickable to open full details */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Top Metrics Cards - Untitled UI Style (Clickable to open full details) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Projects */}
         <button
           type="button"
           onClick={() => setActiveMetricDetail('total_projects')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-blue-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-600 transition-colors">
-              Total Projects
+            <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100/70 flex items-center justify-center text-violet-600">
+              <FolderKanban className="w-4 h-4" />
             </div>
-            <FolderKanban className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-100">
+              Active
+            </span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{summary.totalProjects}</div>
-          <div className="text-[11px] text-blue-600 font-medium mt-1">
-            {summary.activeProjects} In Progress · {summary.completedProjects} Completed
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Projects</div>
+            <div className="text-2xl font-bold tracking-tight text-slate-900 mt-0.5 group-hover:text-violet-600 transition-colors">
+              {summary.totalProjects}
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">
+              {summary.activeProjects} In Progress · {summary.completedProjects} Closed
+            </div>
           </div>
-          <div className="text-[10px] text-blue-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="text-[11px] text-violet-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View all projects</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
 
@@ -72,19 +79,26 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveMetricDetail('total_tasks')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-blue-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-600 transition-colors">
-              Total Tasks
+            <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
+              <CheckSquare className="w-4 h-4" />
             </div>
-            <CheckSquare className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+              Units
+            </span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{summary.totalTasks}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Across All Workspaces</div>
-          <div className="text-[10px] text-blue-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Tasks</div>
+            <div className="text-2xl font-bold tracking-tight text-slate-900 mt-0.5">
+              {summary.totalTasks}
+            </div>
+            <div className="text-[11px] text-slate-400 mt-0.5">Across All Workspaces</div>
+          </div>
+          <div className="text-[11px] text-slate-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View all work units</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
 
@@ -92,19 +106,26 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveMetricDetail('completed_tasks')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-emerald-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider group-hover:text-emerald-800 transition-colors">
-              Completed Tasks
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/70 flex items-center justify-center text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 group-hover:text-emerald-700 transition-colors" />
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+              Delivered
+            </span>
           </div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{summary.completedTasks}</div>
-          <div className="text-[11px] text-emerald-600 font-medium mt-1">Verified Deliverables</div>
-          <div className="text-[10px] text-emerald-600 font-semibold mt-2 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Completed Tasks</div>
+            <div className="text-2xl font-bold tracking-tight text-emerald-600 mt-0.5">
+              {summary.completedTasks}
+            </div>
+            <div className="text-[11px] text-emerald-600 font-medium mt-0.5">Verified Deliverables</div>
+          </div>
+          <div className="text-[11px] text-emerald-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View closed tasks</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
 
@@ -112,32 +133,39 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveMetricDetail('overall_progress')}
-          className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs text-left transition-all hover:border-blue-400 hover:shadow-xs cursor-pointer group"
+          className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-untitledui-xs text-left transition-all hover:border-slate-300 hover:shadow-untitledui-sm cursor-pointer group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider group-hover:text-blue-800 transition-colors">
-              Overall Completion Rate
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100/70 flex items-center justify-center text-indigo-600">
+              <TrendingUp className="w-4 h-4" />
             </div>
-            <TrendingUp className="w-4 h-4 text-blue-600 group-hover:text-blue-700 transition-colors" />
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+              Rate
+            </span>
           </div>
           
-          {/* Percentage and progress bar side-by-side */}
-          <div className="flex items-center gap-3 mt-1.5">
-            <div className="text-2xl font-bold text-blue-600 font-mono shrink-0">
-              {summary.overallProgressPercentage}%
+          <div className="mt-2.5">
+            <div className="text-[11px] font-medium text-indigo-700 uppercase tracking-wider">
+              Overall Completion Rate
             </div>
-            <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${summary.overallProgressPercentage}%` }}
-              />
+            {/* Percentage and progress bar side-by-side */}
+            <div className="flex items-center gap-3 mt-1">
+              <div className="text-2xl font-bold tracking-tight text-indigo-600 font-mono shrink-0">
+                {summary.overallProgressPercentage}%
+              </div>
+              <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200/80">
+                <div
+                  className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
+                  style={{ width: `${summary.overallProgressPercentage}%` }}
+                />
+              </div>
             </div>
+            <div className="text-[11px] text-slate-500 mt-1">Calculated Dynamically</div>
           </div>
 
-          <div className="text-[11px] text-slate-500 mt-1">Calculated Dynamically</div>
-          <div className="text-[10px] text-blue-600 font-semibold mt-1 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <div className="text-[11px] text-indigo-600 font-semibold mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
             <span>View progress breakdown</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </button>
       </div>

@@ -10,6 +10,10 @@ import {
   AlertCircle,
   FileText,
   TrendingUp,
+  Users,
+  Shield,
+  Briefcase,
+  CheckSquare,
 } from 'lucide-react';
 import { ProgressBar } from './ProgressBar';
 
@@ -43,9 +47,41 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   const calculatedPercentage =
     totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
 
-  // Unique assignees working on this project
-  const assigneeIds = Array.from(new Set(projectTasks.map((t) => t.assigned_to).filter(Boolean)));
-  const assignedMembers = users.filter((u) => assigneeIds.includes(u.id));
+  // Project Manager details
+  const managerUser = users.find((u) => u.id === project.manager_id);
+  const managerName = project.manager_name || managerUser?.name || 'Unassigned';
+  const managerEmail = project.manager_email || managerUser?.email || '';
+
+  // Unique assignees working on this project (team members + any other assigned staff)
+  const assigneeIds = Array.from(new Set(projectTasks.map((t) => t.assigned_to).filter((id) => Boolean(id) && id > 0)));
+  
+  // Build detailed roster of people working on this project
+  const projectContributors = assigneeIds.map((userId) => {
+    const user = users.find((u) => u.id === userId);
+    const userTasks = projectTasks.filter((t) => t.assigned_to === userId);
+    const userCompleted = userTasks.filter((t) => t.status === 'Completed').length;
+    const userInProgress = userTasks.filter((t) => t.status === 'In Progress').length;
+    const userPending = userTasks.filter((t) => t.status === 'Pending').length;
+    const userProgress = userTasks.length > 0 ? Math.round((userCompleted / userTasks.length) * 100) : 0;
+    
+    // Fallback info from tasks if user is not in users list
+    const fallbackName = userTasks[0]?.assignee_name || `Member #${userId}`;
+    const fallbackEmail = userTasks[0]?.assignee_email || '';
+    const role = user?.role || 'TEAM_MEMBER';
+
+    return {
+      id: userId,
+      name: user?.name || fallbackName,
+      email: user?.email || fallbackEmail,
+      role,
+      tasks: userTasks,
+      totalTasks: userTasks.length,
+      completedTasks: userCompleted,
+      inProgressTasks: userInProgress,
+      pendingTasks: userPending,
+      progressPercentage: userProgress,
+    };
+  });
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
@@ -78,7 +114,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -101,14 +137,17 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl">
               <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <UserIcon className="w-3 h-3 text-slate-400" />
-                Project Manager
+                <Briefcase className="w-3 h-3 text-blue-500" />
+                Project Manager (Role: Project Manager)
               </div>
-              <div className="text-xs font-bold text-slate-900">
-                {project.manager_name || 'Unassigned'}
+              <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <span>{managerName}</span>
+                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-sm bg-blue-100 text-blue-800 border border-blue-200">
+                  Manager
+                </span>
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                {project.manager_email || 'No email on record'}
+                {managerEmail || 'No email on record'}
               </div>
             </div>
 
@@ -167,6 +206,100 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
               <div className="text-xs font-bold text-amber-800">{pendingCount}</div>
               <div className="text-[10px] text-amber-600 font-medium">Pending</div>
+            </div>
+          </div>
+
+          {/* Who is working on this project & what is their role? */}
+          <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-600" />
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Team Members Working on this Project ({projectContributors.length + (project.manager_id ? 1 : 0)})
+                </h4>
+              </div>
+              <span className="text-[11px] text-slate-500">
+                Live Assignee &amp; Role Breakdown
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {/* Project Manager Card */}
+              <div className="p-3 bg-white border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0">
+                    {managerName.charAt(0) || 'M'}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900">{managerName}</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                        <Briefcase className="w-2.5 h-2.5" />
+                        Project Manager
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-500">{managerEmail || 'Project Owner & Coordinator'}</div>
+                  </div>
+                </div>
+                <div className="text-right text-[11px] text-slate-600 sm:border-l sm:border-slate-100 sm:pl-3">
+                  <span className="font-semibold text-slate-800">Lead &amp; Supervisor</span>
+                  <div className="text-[10px] text-slate-400">Oversees {totalTasks} work units</div>
+                </div>
+              </div>
+
+              {/* Contributing Team Members */}
+              {projectContributors.length === 0 ? (
+                <div className="p-3 bg-white border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400">
+                  No active team members currently assigned to tasks under this project.
+                </div>
+              ) : (
+                projectContributors.map((contributor) => (
+                  <div
+                    key={contributor.id}
+                    className="p-3 bg-white border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs shrink-0">
+                        {contributor.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-slate-900">{contributor.name}</span>
+                          <span
+                            className={`px-2 py-0.5 text-[10px] font-bold rounded-full border flex items-center gap-1 ${
+                              contributor.role === 'ADMIN'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : contributor.role === 'PROJECT_MANAGER'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            <UserIcon className="w-2.5 h-2.5" />
+                            {contributor.role === 'ADMIN'
+                              ? 'Administrator'
+                              : contributor.role === 'PROJECT_MANAGER'
+                              ? 'Project Manager'
+                              : 'Team Member'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          {contributor.email || `ID: #${contributor.id}`} · {contributor.totalTasks} Work Units Assigned
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-slate-500">Progress:</span>
+                        <span className="font-bold text-emerald-600">{contributor.progressPercentage}%</span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        {contributor.completedTasks}/{contributor.totalTasks} Done · {contributor.inProgressTasks} In Progress
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -242,14 +375,14 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                   onClose();
                   onEdit(project);
                 }}
-                className="px-3.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="px-3.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
               >
                 Edit Project
               </button>
             )}
             <button
               onClick={onClose}
-              className="px-4 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white rounded-lg transition-colors"
+              className="px-4 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white rounded-lg transition-colors cursor-pointer"
             >
               Close
             </button>
@@ -259,3 +392,4 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
     </div>
   );
 };
+

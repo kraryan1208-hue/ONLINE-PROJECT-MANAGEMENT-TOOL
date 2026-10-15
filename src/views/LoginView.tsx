@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User as UserIcon, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { User as UserIcon, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff, Shield, Briefcase } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface LoginViewProps {
@@ -131,16 +131,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin, onRegister }) => 
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 selection:bg-blue-500 selection:text-white">
-      {/* Brand Header */}
-      <div className="text-center mb-6 max-w-md">
-        <h1 className="text-2xl font-bold text-white tracking-tight">
+    <div className="min-h-screen bg-[#fafbfc] flex flex-col justify-center items-center p-4 selection:bg-indigo-600 selection:text-white">
+      {/* Brand Header - Untitled UI Style */}
+      <div className="text-center mb-6 max-w-md flex flex-col items-center">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white font-bold text-xl shadow-untitledui-sm border border-indigo-400/20 mb-3">
+          O
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
           Online Project Management Tool
         </h1>
+        <p className="text-xs text-slate-500 mt-1">Enterprise Project &amp; Delivery System</p>
       </div>
 
       {/* Main Login / Register Card */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-8 overflow-hidden">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-untitledui-lg border border-slate-200/90 p-8 overflow-hidden">
         {/* Auth Mode Toggle Tabs */}
         <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
           <button
@@ -279,6 +283,68 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin, onRegister }) => 
                 </>
               )}
             </button>
+
+            {/* Quick Demo Credentials by Role */}
+            <div className="pt-3 border-t border-slate-100">
+              <div className="text-[11px] font-semibold text-slate-500 mb-2 text-center">
+                Or fill demo account for role evaluation:
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('admin@example.com');
+                    setPassword('admin123');
+                    setError('');
+                  }}
+                  className={`p-2 rounded-lg border text-center transition-all ${
+                    email === 'admin@example.com'
+                      ? 'border-rose-400 bg-rose-50/70 text-rose-800 font-bold shadow-2xs'
+                      : 'border-slate-200 hover:bg-slate-50 text-slate-700 font-medium'
+                  }`}
+                >
+                  <Shield className="w-3.5 h-3.5 mx-auto text-rose-600 mb-0.5" />
+                  <div className="text-[11px] leading-tight">Admin</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('manager@example.com');
+                    setPassword('manager123');
+                    setError('');
+                  }}
+                  className={`p-2 rounded-lg border text-center transition-all ${
+                    email === 'manager@example.com'
+                      ? 'border-blue-400 bg-blue-50/70 text-blue-800 font-bold shadow-2xs'
+                      : 'border-slate-200 hover:bg-slate-50 text-slate-700 font-medium'
+                  }`}
+                >
+                  <Briefcase className="w-3.5 h-3.5 mx-auto text-blue-600 mb-0.5" />
+                  <div className="text-[11px] leading-tight">Manager</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('member@example.com');
+                    setPassword('member123');
+                    setError('');
+                  }}
+                  className={`p-2 rounded-lg border text-center transition-all ${
+                    email === 'member@example.com'
+                      ? 'border-emerald-400 bg-emerald-50/70 text-emerald-800 font-bold shadow-2xs'
+                      : 'border-slate-200 hover:bg-slate-50 text-slate-700 font-medium'
+                  }`}
+                >
+                  <UserIcon className="w-3.5 h-3.5 mx-auto text-emerald-600 mb-0.5" />
+                  <div className="text-[11px] leading-tight">Member</div>
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500 text-center mt-2">
+                Roles are locked to accounts. Once signed in, only that role's dashboard opens.
+              </p>
+            </div>
           </form>
         )}
 

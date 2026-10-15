@@ -1,7 +1,12 @@
 package com.projectmanagement.dao;
 
 import com.projectmanagement.exception.DatabaseException;
+import com.projectmanagement.model.Admin;
 import com.projectmanagement.model.Project;
+import com.projectmanagement.model.ProjectManager;
+import com.projectmanagement.model.ProjectProgress;
+import com.projectmanagement.model.TeamMember;
+import com.projectmanagement.model.User;
 import com.projectmanagement.util.DBConnection;
 
 import java.sql.Connection;
@@ -277,6 +282,205 @@ public class ProjectDAOImpl implements ProjectDAO {
             return 0;
         } catch (SQLException e) {
             throw new DatabaseException("Error getting active projects count", e);
+        } finally {
+            DBConnection.close(rs, stmt, conn);
+        }
+    }
+
+    // =========================================================================
+    // RELATIONAL PROJECT MEMBERS (project_members TABLE)
+    // =========================================================================
+
+    private User mapResultSetToUser(ResultSet rs) throws SQLException {
+        int id = rs.getInt("id");
+        String name = rs.getString("name");
+        String email = rs.getString("email");
+        String password = rs.getString("password");
+        String role = rs.getString("role");
+        java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
+
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return new Admin(id, name, email, password, createdAt);
+        } else if ("PROJECT_MANAGER".equalsIgnoreCase(role)) {
+            return new ProjectManager(id, name, email, password, createdAt);
+        } else {
+            return new TeamMember(id, name, email, password, createdAt);
+        }
+    }
+
+    @Override
+    public boolean addProjectMember(int projectId, int userId) throws DatabaseException {
+        String sql = "INSERT INTO project_members (project_id, user_id) VALUES (?, ?) " +
+                     "ON DUPLICATE KEY UPDATE assigned_at = CURRENT_TIMESTAMP";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projectId);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error assigning user " + userId + " to project " + projectId, e);
+        } finally {
+            DBConnection.close(stmt, conn);
+        }
+    }
+
+    @Override
+    public boolean removeProjectMember(int projectId, int userId) throws DatabaseException {
+        String sql = "DELETE FROM project_members WHERE project_id = ? AND user_id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projectId);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error removing user " + userId + " from project " + projectId, e);
+        } finally {
+            DBConnection.close(stmt, conn);
+        }
+    }
+
+    @Override
+    public List<User> getProjectMembers(int projectId) throws DatabaseException {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT u.* FROM users u " +
+                     "JOIN project_members pm ON u.id = pm.user_id " +
+                     "WHERE pm.project_id = ? ORDER BY u.name ASC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projectId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToUser(rs));
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error fetching members for project ID: " + projectId, e);
+        } finally {
+            DBConnection.close(rs, stmt, conn);
+        }
+    }
+
+    @Override
+    public List<Project> getProjectsForMember(int userId) throws DatabaseException {
+        List<Project> list = new ArrayList<>();
+        String sql = BASE_SELECT_WITH_PROGRESS +
+                     "JOIN project_members pm ON p.id = pm.project_id " +
+                     "WHERE pm.user_id = ? " +
+                     "GROUP BY p.id, u.name ORDER BY p.id DESC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToProject(rs));
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error fetching projects for member ID: " + userId, e);
+        } finally {
+            DBConnection.close(rs, stmt, conn);
+        }
+    }
+
+    @Override
+    public List<Integer> getMemberIdsByProject(int projectId) throws DatabaseException {
+        List<Integer> list = new ArrayList<>();
+        String sql = "SELECT user_id FROM project_members WHERE project_id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projectId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("user_id"));
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error retrieving member IDs for project " + projectId, e);
+        } finally {
+            DBConnection.close(rs, stmt, conn);
+        }
+    }
+
+    // =========================================================================
+    // DYNAMIC PROJECT PROGRESS VIEW (v_project_progress)
+    // =========================================================================
+
+    private ProjectProgress mapResultSetToProjectProgress(ResultSet rs) throws SQLException {
+        int projectId = rs.getInt("project_id");
+        String title = rs.getString("project_title");
+        int total = rs.getInt("total_tasks");
+        int completed = rs.getInt("completed_tasks");
+        int inProgress = rs.getInt("in_progress_tasks");
+        int pending = rs.getInt("pending_tasks");
+        double percentage = rs.getDouble("completion_percentage");
+
+        return new ProjectProgress(projectId, title, total, completed, inProgress, pending, percentage);
+    }
+
+    @Override
+    public ProjectProgress getProjectProgressFromView(int projectId) throws DatabaseException {
+        String sql = "SELECT * FROM v_project_progress WHERE project_id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, projectId);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToProjectProgress(rs);
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error reading project progress from v_project_progress for ID: " + projectId, e);
+        } finally {
+            DBConnection.close(rs, stmt, conn);
+        }
+    }
+
+    @Override
+    public List<ProjectProgress> getAllProjectProgressFromView() throws DatabaseException {
+        List<ProjectProgress> list = new ArrayList<>();
+        String sql = "SELECT * FROM v_project_progress ORDER BY project_id DESC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToProjectProgress(rs));
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error reading all project progress from v_project_progress view", e);
         } finally {
             DBConnection.close(rs, stmt, conn);
         }

@@ -16,11 +16,17 @@ import {
   AlertCircle,
   Save,
   Check,
+  ArrowUpRight,
+  Activity,
+  Layers,
 } from 'lucide-react';
 import { ProgressBar } from '../components/ProgressBar';
 import { DoughnutChart } from '../components/DoughnutChart';
+import { DashboardChartsSection, PieChartItem, BarGraphItem } from '../components/DashboardCharts';
+import { DashboardDataTable } from '../components/DashboardDataTable';
 import { MetricDetailModal, MetricDetailType } from '../components/MetricDetailModal';
 import { ProjectDetailModal } from '../components/ProjectDetailModal';
+import { TaskDetailModal } from '../components/TaskDetailModal';
 import { SettingsView } from './SettingsView';
 
 interface AdminDashboardViewProps {
@@ -38,6 +44,7 @@ interface AdminDashboardViewProps {
   onCreateProject: () => void;
   onEditProject: (project: Project) => void;
   onDeleteProject: (project: Project) => void;
+  onUpdateTaskStatus?: (taskId: number, newStatus: 'Pending' | 'In Progress' | 'Completed') => Promise<void>;
   onSaveSettings?: (settings: SystemSetting[]) => Promise<void>;
   onNavigateSection?: (section: 'dashboard' | 'users' | 'projects' | 'settings') => void;
   successMessage?: string;
@@ -58,6 +65,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onCreateProject,
   onEditProject,
   onDeleteProject,
+  onUpdateTaskStatus,
   onSaveSettings,
   onNavigateSection,
   successMessage,
@@ -72,6 +80,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   // Modal inspection state
   const [activeMetricDetail, setActiveMetricDetail] = useState<MetricDetailType | null>(null);
   const [selectedProjectDetail, setSelectedProjectDetail] = useState<Project | null>(null);
+  const [selectedTaskDetail, setSelectedTaskDetail] = useState<Task | null>(null);
 
   // Filtered Users
   const filteredUsers = users.filter((u) => {
@@ -91,11 +100,25 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     return matchesSearch && matchesStatus;
   });
 
-  const doughnutData = [
+  // Chart telemetry data
+  const statusData: PieChartItem[] = [
     { name: 'Completed', value: summary.completedTasks, color: '#10B981' },
-    { name: 'In Progress', value: summary.inProgressTasks, color: '#3B82F6' },
+    { name: 'In Progress', value: summary.inProgressTasks, color: '#6366F1' },
     { name: 'Pending', value: summary.pendingTasks, color: '#F59E0B' },
   ];
+
+  const priorityData: PieChartItem[] = [
+    { name: 'High', value: tasks.filter((t) => t.priority === 'High').length, color: '#EF4444' },
+    { name: 'Medium', value: tasks.filter((t) => t.priority === 'Medium').length, color: '#F59E0B' },
+    { name: 'Low', value: tasks.filter((t) => t.priority === 'Low').length, color: '#64748B' },
+  ];
+
+  const barData: BarGraphItem[] = projects.map((p) => ({
+    label: p.title.length > 14 ? p.title.substring(0, 12) + '...' : p.title,
+    completed: p.completed_tasks,
+    pendingOrTotal: p.total_tasks,
+    rate: p.progress_percentage,
+  }));
 
   return (
     <div className="space-y-6">
@@ -121,14 +144,14 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={onAddUser}
-                className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs"
+                className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-untitledui-xs transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-slate-500" />
                 <span>Add User</span>
               </button>
               <button
                 onClick={onCreateProject}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-untitledui-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Create Project</span>
@@ -136,185 +159,218 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 7 Core Dashboard Statistics Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          {/* 7 Core Dashboard Statistics Cards - Ultra-Professional Untitled UI Style */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            {/* Card 1: Total Users */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('total_users')}
-              className="text-left p-4 bg-white hover:bg-blue-50/40 hover:border-blue-300 transition-all rounded-xl border border-slate-200/90 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
-              title="Click to view Total Users details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Total Users breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-blue-600 transition-colors flex items-center justify-between">
-                <span>Total Users</span>
-                <span className="text-[10px] text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100/70 flex items-center justify-center text-indigo-600">
+                  <Users className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <ArrowUpRight className="w-3 h-3 text-emerald-600" />
+                  +12%
+                </span>
               </div>
-              <div className="text-2xl font-bold text-slate-900 group-hover:text-blue-700">{summary.totalUsers}</div>
-              <div className="text-[10px] text-slate-400 mt-1">Across 3 Roles</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Users</div>
+                <div className="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors mt-0.5">
+                  {summary.totalUsers}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>Across 3 roles</span>
+                <span className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 2: Total Projects */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('total_projects')}
-              className="text-left p-4 bg-white hover:bg-purple-50/40 hover:border-purple-300 transition-all rounded-xl border border-slate-200/90 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-purple-500/20"
-              title="Click to view Total Projects details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Total Projects breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-purple-600 transition-colors flex items-center justify-between">
-                <span>Total Projects</span>
-                <span className="text-[10px] text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100/70 flex items-center justify-center text-violet-600">
+                  <FolderKanban className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-100">
+                  Active
+                </span>
               </div>
-              <div className="text-2xl font-bold text-slate-900 group-hover:text-purple-700">{summary.totalProjects}</div>
-              <div className="text-[10px] text-blue-600 font-medium mt-1">In Repository</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Projects</div>
+                <div className="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-violet-600 transition-colors mt-0.5">
+                  {summary.totalProjects}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>In repository</span>
+                <span className="text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 3: Active Projects */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('active_projects')}
-              className="text-left p-4 bg-white hover:bg-blue-50/40 hover:border-blue-400 transition-all rounded-xl border border-slate-200/90 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
-              title="Click to view Active Projects details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Active Projects breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-blue-700 transition-colors flex items-center justify-between">
-                <span>Active Projects</span>
-                <span className="text-[10px] text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100/70 flex items-center justify-center text-sky-600">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-100">
+                  Live
+                </span>
               </div>
-              <div className="text-2xl font-bold text-blue-600 group-hover:text-blue-700">{summary.activeProjects}</div>
-              <div className="text-[10px] text-slate-400 mt-1">In Progress</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Active Projects</div>
+                <div className="text-2xl font-bold tracking-tight text-sky-600 group-hover:text-sky-700 transition-colors mt-0.5">
+                  {summary.activeProjects}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>In progress</span>
+                <span className="text-sky-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 4: Total Tasks */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('total_tasks')}
-              className="text-left p-4 bg-white hover:bg-slate-100 hover:border-slate-400 transition-all rounded-xl border border-slate-200/90 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-slate-500/20"
-              title="Click to view Total Tasks details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Total Tasks breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-slate-700 transition-colors flex items-center justify-between">
-                <span>Total Tasks</span>
-                <span className="text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
+                  <CheckSquare className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  Units
+                </span>
               </div>
-              <div className="text-2xl font-bold text-slate-900 group-hover:text-slate-800">{summary.totalTasks}</div>
-              <div className="text-[10px] text-slate-400 mt-1">Work Units</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Tasks</div>
+                <div className="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-slate-800 transition-colors mt-0.5">
+                  {summary.totalTasks}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>All deliverables</span>
+                <span className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 5: Completed Tasks */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('completed_tasks')}
-              className="text-left p-4 bg-white hover:bg-emerald-50/40 hover:border-emerald-300 transition-all rounded-xl border border-slate-200/90 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-              title="Click to view Completed Tasks details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Completed Tasks breakdown"
             >
-              <div className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1 group-hover:text-emerald-800 transition-colors flex items-center justify-between">
-                <span>Completed Tasks</span>
-                <span className="text-[10px] text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/70 flex items-center justify-center text-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  {summary.overallProgressPercentage}%
+                </span>
               </div>
-              <div className="text-2xl font-bold text-emerald-600 group-hover:text-emerald-700">{summary.completedTasks}</div>
-              <div className="text-[10px] text-emerald-600 font-medium mt-1">Closed</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Completed Tasks</div>
+                <div className="text-2xl font-bold tracking-tight text-emerald-600 group-hover:text-emerald-700 transition-colors mt-0.5">
+                  {summary.completedTasks}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-emerald-600 font-medium">Closed</span>
+                <span className="text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 6: Pending Tasks */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('pending_tasks')}
-              className="text-left p-4 bg-white hover:bg-amber-50/40 hover:border-amber-300 transition-all rounded-xl border border-slate-200/90 shadow-2xs group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
-              title="Click to view Pending Tasks details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Pending Tasks breakdown"
             >
-              <div className="text-[11px] font-semibold text-amber-700 uppercase tracking-wider mb-1 group-hover:text-amber-800 transition-colors flex items-center justify-between">
-                <span>Pending Tasks</span>
-                <span className="text-[10px] text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100/70 flex items-center justify-center text-amber-600">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                  To Do
+                </span>
               </div>
-              <div className="text-2xl font-bold text-amber-600 group-hover:text-amber-700">{summary.pendingTasks}</div>
-              <div className="text-[10px] text-amber-600 font-medium mt-1">To Complete</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-amber-700 uppercase tracking-wider">Pending Tasks</div>
+                <div className="text-2xl font-bold tracking-tight text-amber-600 group-hover:text-amber-700 transition-colors mt-0.5">
+                  {summary.pendingTasks}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-amber-600 font-medium">In backlog</span>
+                <span className="text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
 
+            {/* Card 7: Team Members */}
             <button
               type="button"
               onClick={() => setActiveMetricDetail('team_members')}
-              className="text-left p-4 bg-white hover:bg-indigo-50/40 hover:border-indigo-300 transition-all rounded-xl border border-slate-200/90 shadow-2xs col-span-2 lg:col-span-1 group cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-              title="Click to view Team Members details"
+              className="text-left p-4 bg-white hover:bg-slate-50/90 hover:border-slate-300 transition-all rounded-xl border border-slate-200/90 shadow-untitledui-xs hover:shadow-untitledui-sm col-span-2 sm:col-span-2 md:col-span-1 lg:col-span-1 group cursor-pointer focus:outline-hidden focus:ring-4 focus:ring-slate-100 flex flex-col justify-between"
+              title="Click to view Team Members breakdown"
             >
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 group-hover:text-indigo-600 transition-colors flex items-center justify-between">
-                <span>Team Members</span>
-                <span className="text-[10px] text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100/70 flex items-center justify-center text-teal-600">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-100">
+                  Online
+                </span>
               </div>
-              <div className="text-2xl font-bold text-indigo-600 group-hover:text-indigo-700">{summary.totalTeamMembers}</div>
-              <div className="text-[10px] text-slate-400 mt-1">Engineers &amp; QA</div>
+              <div className="mt-2.5">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Team Members</div>
+                <div className="text-2xl font-bold tracking-tight text-indigo-600 group-hover:text-indigo-700 transition-colors mt-0.5">
+                  {summary.totalTeamMembers}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>Engineers &amp; QA</span>
+                <span className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">View →</span>
+              </div>
             </button>
           </div>
 
-          {/* Charts & Project List Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Chart Widget */}
-            <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 mb-1">Global Task Distribution</h3>
-                <p className="text-xs text-slate-500 mb-4">
-                  Calculated dynamically from real database records.
-                </p>
-              </div>
-              <DoughnutChart data={doughnutData} />
-              <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                <span className="text-xs font-semibold text-slate-700">Overall Progress: </span>
-                <span className="text-sm font-bold text-blue-600">{summary.overallProgressPercentage}%</span>
-              </div>
-            </div>
+          {/* CHARTS SECTION: PI CHARTS & VELOCITY GRAPH (Side-by-Side with Interactive Toggles) */}
+          <DashboardChartsSection
+            statusData={statusData}
+            priorityData={priorityData}
+            barData={barData}
+            completionRate={summary.overallProgressPercentage}
+            totalTasks={summary.totalTasks}
+            completedTasks={summary.completedTasks}
+          />
 
-            {/* Recent Active Projects with dynamic progress bar */}
-            <div className="lg:col-span-2 p-6 bg-white rounded-xl border border-slate-200 shadow-2xs">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Active Projects &amp; Progress</h3>
-                  <p className="text-xs text-slate-500">
-                    Formula: (Completed Tasks / Total Tasks) × 100
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveMetricDetail('total_projects')}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <span>{projects.length} Total Projects</span>
-                  <span className="text-[11px]">→</span>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {projects.slice(0, 4).map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => setSelectedProjectDetail(p)}
-                    className="p-3.5 rounded-lg bg-slate-50 hover:bg-blue-50/50 border border-slate-100 hover:border-blue-200 transition-all cursor-pointer group shadow-2xs"
-                    title={`Click to view full details of ${p.title}`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                            {p.title}
-                          </h4>
-                          <span className="text-[10px] text-blue-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            View Details ↗
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
-                          <span>Manager: {p.manager_name || 'Unassigned'}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>Due {p.end_date}</span>
-                          <span aria-hidden="true">·</span>
-                          <span className="font-medium text-slate-700">{p.status}</span>
-                        </div>
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">
-                        {p.progress_percentage}%
-                      </span>
-                    </div>
-                    <ProgressBar
-                      percentage={p.progress_percentage}
-                      completedTasks={p.completed_tasks}
-                      totalTasks={p.total_tasks}
-                      showLabel={false}
-                      size="sm"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* TABLES SECTION: LIVE WORKSPACE DELIVERABLES & TRACKING TABLE */}
+          <DashboardDataTable
+            tasks={tasks}
+            projects={projects}
+            users={users}
+            onSelectTask={(task) => setSelectedTaskDetail(task)}
+            onSelectProject={(project) => setSelectedProjectDetail(project)}
+            onUpdateTaskStatus={onUpdateTaskStatus}
+          />
         </div>
       )}
 
@@ -509,10 +565,20 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     </tr>
                   ) : (
                     filteredProjects.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
+                      <tr
+                        key={p.id}
+                        className="hover:bg-blue-50/40 transition-colors cursor-pointer group"
+                        onClick={() => setSelectedProjectDetail(p)}
+                        title={`Click to view team members, roles, and details of ${p.title}`}
+                      >
                         <td className="py-3 px-4 font-mono font-medium text-slate-900">#{p.id}</td>
                         <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{p.title}</div>
+                          <div className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
+                            <span>{p.title}</span>
+                            <span className="text-[10px] text-blue-500 font-normal opacity-0 group-hover:opacity-100 transition-opacity">
+                              View Team ↗
+                            </span>
+                          </div>
                           <div className="text-[11px] text-slate-400 line-clamp-1">{p.description}</div>
                         </td>
                         <td className="py-3 px-4 font-medium text-slate-800">{p.manager_name}</td>
@@ -542,17 +608,17 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                             size="sm"
                           />
                         </td>
-                        <td className="py-3 px-4 text-right space-x-1">
+                        <td className="py-3 px-4 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => onEditProject(p)}
-                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                             title="Edit Project"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => onDeleteProject(p)}
-                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
                             title="Delete Project"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -599,6 +665,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         users={users}
         onClose={() => setSelectedProjectDetail(null)}
         onEdit={(p) => onEditProject(p)}
+      />
+
+      {/* Task Detail Modal for Live Deliverables Table */}
+      <TaskDetailModal
+        isOpen={selectedTaskDetail !== null}
+        task={selectedTaskDetail}
+        onClose={() => setSelectedTaskDetail(null)}
+        project={projects.find((p) => p.id === selectedTaskDetail?.project_id)}
+        assignee={users.find((u) => u.id === selectedTaskDetail?.assigned_to)}
+        canEdit={false}
       />
     </div>
   );

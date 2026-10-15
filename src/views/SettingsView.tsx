@@ -212,138 +212,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       )}
 
       <form onSubmit={handleSaveAll} className="space-y-6">
-        {/* 1. APPEARANCE SETTINGS */}
-        <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">1. Appearance &amp; Themes</h3>
-              <p className="text-xs text-slate-500">Choose your workspace display mode and color theme palette.</p>
-            </div>
-          </div>
-
-          {/* Mode Switch: Light vs Dark */}
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-slate-700">Display Mode:</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Light Mode Option */}
-              <label
-                onClick={() => setMode('light')}
-                className={`flex items-center gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                  mode === 'light'
-                    ? 'bg-blue-50/50 border-blue-500 shadow-xs ring-1 ring-blue-500/20'
-                    : 'bg-white border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="mode"
-                  value="light"
-                  checked={mode === 'light'}
-                  onChange={() => setMode('light')}
-                  className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
-                />
-                <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                  <Sun className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-900">Light Mode</div>
-                  <div className="text-[11px] text-slate-500">Standard bright, high-contrast workspace</div>
-                </div>
-              </label>
-
-              {/* Dark Mode Option */}
-              <label
-                onClick={() => setMode('dark')}
-                className={`flex items-center gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                  mode === 'dark'
-                    ? 'bg-slate-900 text-white border-cyan-500 shadow-xs ring-1 ring-cyan-500/20'
-                    : 'bg-white border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="mode"
-                  value="dark"
-                  checked={mode === 'dark'}
-                  onChange={() => setMode('dark')}
-                  className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
-                />
-                <div className="w-9 h-9 rounded-lg bg-slate-800 text-cyan-400 flex items-center justify-center shrink-0">
-                  <Moon className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className={`text-xs font-bold ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                    Dark Mode
-                  </div>
-                  <div className={`text-[11px] ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Sleek obsidian theme with low eye fatigue
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          {/* Theme Presets Palettes */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-blue-600" />
-                Theme Presets &amp; Color Accents:
-              </span>
-              <span className="text-[11px] text-slate-400">Click to apply instantly</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-              {presets.map((preset) => {
-                const isSelected = activePresetId === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => selectPreset(preset.id)}
-                    className={`p-3 text-left rounded-xl border transition-all relative flex flex-col justify-between ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50/40 ring-1 ring-blue-500/30 shadow-xs'
-                        : 'border-slate-200 bg-white hover:bg-slate-50/80'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-4 h-4 rounded-full border border-black/10 shrink-0 shadow-2xs"
-                          style={{ backgroundColor: preset.primaryColor }}
-                        />
-                        <span className="text-xs font-bold text-slate-900">{preset.name}</span>
-                      </div>
-                      {isSelected ? (
-                        <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5" />
-                        </div>
-                      ) : (
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase ${
-                            preset.mode === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {preset.mode}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
-                      {preset.description}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* 2. NOTIFICATIONS SETTINGS */}
-        <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-4">
+        {/* 1. NOTIFICATIONS SETTINGS */}
+        <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs space-y-4">
           <div className="border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-900">2. Notifications</h3>
-            <p className="text-xs text-slate-500">Control alerts and updates for tasks, projects, and email.</p>
+            <h3 className="text-sm font-bold text-slate-900">1. Notifications &amp; Alerts</h3>
+            <p className="text-xs text-slate-500">Control notifications and real-time alerts for tasks, deliverables, and team updates.</p>
           </div>
 
           <div className="space-y-4 pt-1">
@@ -528,7 +401,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 type="button"
                 onClick={handleChangePassword}
                 disabled={passwordUpdating || !newPassword}
-                className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-40"
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-untitledui-xs disabled:opacity-40"
               >
                 <Lock className="w-3.5 h-3.5" />
                 <span>{passwordUpdating ? 'Updating Password...' : 'Update Password'}</span>
@@ -545,7 +418,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold flex items-center gap-2 border border-rose-200 transition-colors shrink-0"
+              className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold flex items-center gap-2 border border-rose-200 shadow-untitledui-xs transition-colors shrink-0"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
@@ -553,15 +426,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        {/* 4. SAVE CHANGES BUTTON */}
-        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+        {/* SAVE CHANGES BUTTON - Untitled UI Style */}
+        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-untitledui-xs">
           <div className="text-xs text-slate-500">
-            Changes to Appearance and Notifications take effect immediately.
+            Changes to your notifications take effect immediately.
           </div>
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-untitledui-xs transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>
